@@ -549,6 +549,23 @@ contract LosslessGovernance is ILssGovernance, Initializable, AccessControlUpgra
 
     }
 
+    /// @notice AMM: This lets an erroneously reported Smart Contract retrieve compensation
+    function retrieveCompensationForSmartContract(address reportedAddress) public whenNotPaused {
+        require(isContract(reportedAddress), "LSS: reportedAddress must be a Smart Contract");
+
+        require(compensation[reportedAddress].payed, "LSS: Already retrieved");
+        require(compensation[reportedAddress].amount != 0, "LSS: No retribution assigned");
+
+        compensation[reportedAddress].payed = true;
+
+        losslessReporting.retrieveCompensation(reportedAddress, compensation[reportedAddress].amount);
+
+        emit CompensationRetrieval(reportedAddress, compensation[reportedAddress].amount);
+
+        compensation[reportedAddress].amount = 0;
+
+    }
+
     ///@notice This function verifies is an address belongs to a contract
     ///@param _addr address to verify
     function isContract(address _addr) private view returns (bool){

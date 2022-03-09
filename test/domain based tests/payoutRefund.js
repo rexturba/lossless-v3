@@ -295,4 +295,23 @@ describe(scriptName, () => {
       );
     });
   });
+
+  describe('when a Smart Contract is erroneusly reported', () => {
+    beforeEach(async () => {
+      await env.lssGovernance.connect(adr.lssAdmin).losslessVote(1, false);
+      await env.lssGovernance.connect(adr.lerc20Admin).tokenOwnersVote(1, false);
+      await env.lssGovernance.connect(adr.member1).committeeMemberVote(1, false);
+      await env.lssGovernance.connect(adr.member2).committeeMemberVote(1, false);
+      await env.lssGovernance.connect(adr.member3).committeeMemberVote(1, false);
+      await env.lssGovernance.connect(adr.member4).committeeMemberVote(1, false);
+
+      await env.lssGovernance.connect(adr.lssAdmin).resolveReport(1);
+    });
+
+    it('should let the address recieve compensation', async () => {
+      await expect(
+        env.lssGovernance.connect(adr.lssAdmin).retrieveCompensationForSmartContract(adr.maliciousActor1.address),
+      ).to.emit(env.lssGovernance, 'CompensationRetrieval');
+    });
+  });
 });
